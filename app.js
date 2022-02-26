@@ -1,6 +1,7 @@
 const express = require('express');
 const mysql = require('mysql');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 const app = express();
 
 app.use(express.static('public'));
@@ -9,7 +10,7 @@ app.use(express.urlencoded({extended: false}));
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'progate',
-  password: 'password',
+  password: 'password',	
   database: 'blog'
 });
 
@@ -56,6 +57,72 @@ app.get('/article/:id', (req, res) => {
   );
 });
 
+app.get('/signup', (req, res) => {
+  res.render('signup.ejs', { errors: [] });
+});
+
+app.post('/signup', 
+  (req, res, next) => {
+    console.log('Empty input value check');
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    const errors = [];
+
+    if (username === '') {
+      errors.push('Username is empty');
+    }
+
+    if (email === '') {
+      errors.push('Email is empty');
+    }
+
+    if (password === '') {
+      errors.push('Password is empty');
+    }
+
+    if (errors.length > 0) {
+      res.render('signup.ejs', { errors: errors });
+    } else {
+      next();
+    }
+  },
+  (req, res, next) => {
+    console.log('Duplicate emails check');
+    const email = req.body.email;
+    const errors = [];
+    connection.query(
+        'SELECT * FROM users WHERE email = ?',
+        [email],
+        (error, results) => {
+          if (results.length > 0) {
+            errors.push('Failed to register user');
+            res.render('signup.ejs', { errors: errors });
+          } else {
+            next();
+          }
+        }
+      );    
+  },
+  (req, res) => {
+    console.log('Sign up');
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    bcrypt.hash(password, 10, (error, hash) => {
+      connection.query(
+        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+        [username, email, hash],
+        (error, results) => {
+          req.session.userId = results.insertId;
+          req.session.username = username;
+          res.redirect('/list');
+        }
+      );
+    });
+  }
+);
+
 app.get('/login', (req, res) => {
   res.render('login.ejs');
 });
@@ -67,13 +134,22 @@ app.post('/login', (req, res) => {
     [email],
     (error, results) => {
       if (results.length > 0) {
-        if (req.body.password === results[0].password){
-          req.session.userId = results[0].id;
-          req.session.username = results[0].username;
-          res.redirect('/list');
-        } else {
-          res.redirect('/login');
-        }    
+        // Define the plain constant
+        const plain = req.body.password;
+        
+        // Define the hash constant
+        const hash = results[0].password;
+        
+        // Add a compare method to compare the passwords
+        bcrypt.compare(plain, hash, (error, isEqual)=>{
+          if (isEqual){
+            req.session.userId = results[0].id;
+            req.session.username = results[0].username;
+            res.redirect('/list');
+          }else{
+            res.redirect('/login')
+          }
+        });
       } else {
         res.redirect('/login');
       }

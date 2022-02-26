@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BLOG</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/send_url.js"></script>
+  </head>
+  <body>
+    <%- include('header'); %>
+    <main>
+      <ul class="list">
+        <% articles.forEach((article) => { %>
+          <li>
+            <% if (article.category === 'limited') {%>
+              <i>MEMBERS ONLY</i>
+            <% } %>          
+            <h2><%= article.title %></h2>
+            <p><%= article.summary %></p>
+            <a href="/article/<%= article.id %>">Read more</a>
+          </li>
+        <% }) %>
+      </ul>
+    </main>
+  </body>
+</html>

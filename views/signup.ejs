@@ -11,13 +11,22 @@
       <div class="container">
         <h1><a href="/list">BLOG</a></h1>
         <div class="panel">
-          <h2>Log in</h2>
-          <form action="/login" method="post">
+          <h2>Sign up</h2>
+          <% if (errors.length > 0) { %>
+            <ul class="errors">
+              <% errors.forEach(error => { %>
+                <li><%= error %></li>
+              <% }); %>
+            </ul>
+          <% } %>
+          <form action="/signup" method="post">
+            <p>Username</p>
+            <input type="text" name="username">
             <p>Email</p>
             <input type="text" name="email">
             <p>Password</p>
             <input type="password" name="password">
-            <input type="submit" value="Log in">
+            <input type="submit" value="Sign up">
             <a href="/list">Back to articles</a>
           </form>
         </div>
