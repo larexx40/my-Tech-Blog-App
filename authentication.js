@@ -25,13 +25,11 @@ exports.verifyInput = (req, res, next)=>{
     if (errors.length > 0) {
         res.render('signup.ejs', { errors: errors });
     } else {
-        //proceed to verify if email exist
+        //proceed to verify if email exist in db
         next();
     }
       
 }
-
-
 
 exports.verifyEmailExist= (req, res, next)=>{
 
@@ -39,12 +37,12 @@ exports.verifyEmailExist= (req, res, next)=>{
     console.log('Check if user/email exist');
     const email = req.body.email;
     const errors = [];
-    db.query(
+    connection.query(
         'SELECT * FROM users WHERE email = ?',
         [email],
         (error, results) => {
             if (results.length > 0) {
-                errors.push('Failed to register user, ' + email + ' aleady exist');
+                errors.push('Failed to register user \n ' + email + ' aleady exist');
                 res.render('signup.ejs', { errors: errors });
             } else {
                 //proceed to hash password
@@ -53,6 +51,8 @@ exports.verifyEmailExist= (req, res, next)=>{
         }
     );
 }
+
+
 
 exports.hashPassword = (req, res, next) => {
     console.log('Encrypt password and Sign up');

@@ -58,50 +58,7 @@ app.get('/signup', (req, res) => {
   res.render('signup.ejs', { errors: [] });
 });
 
-app.post('/signup', 
-  (req, res, next) => {
-    console.log('Empty input value check');
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
-    const errors = [];
-
-    if (username === '') {
-      errors.push('Username is empty');
-    }
-
-    if (email === '') {
-      errors.push('Email is empty');
-    }
-
-    if (password === '') {
-      errors.push('Password is empty');
-    }
-
-    if (errors.length > 0) {
-      res.render('signup.ejs', { errors: errors });
-    } else {
-      next();
-    }
-  },
-  (req, res, next) => {
-    //verify email
-    console.log('Duplicate emails check');
-    const email = req.body.email;
-    const errors = [];
-    connection.query(
-        'SELECT * FROM users WHERE email = ?',
-        [email],
-        (error, results) => {
-          if (results.length > 0) {
-            errors.push('Failed to register user');
-            res.render('signup.ejs', { errors: errors });
-          } else {
-            next();
-          }
-        }
-      );    
-  },
+app.post('/signup', auth.verifyInput, auth.verifyEmailExist,
   (req, res) => {
     //hash pasword and save
     console.log('Sign up');
@@ -109,7 +66,7 @@ app.post('/signup',
     const email = req.body.email;
     const password = req.body.password;
     bcrypt.hash(password, 10, (error, hash) => {
-      db.connection.query(
+      connection.query(
         'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
         [username, email, hash],
         (error, results) => {
