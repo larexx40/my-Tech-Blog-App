@@ -35,8 +35,8 @@ exports.verifyInput = (req, res, next)=>{
 
 exports.verifyEmailExist= (req, res, next)=>{
 
-    //to check for duplicate email
-    console.log('Duplicate emails check');
+    //to check for duplicate email before saving to db 
+    console.log('Check if user/email exist');
     const email = req.body.email;
     const errors = [];
     db.query(
@@ -55,7 +55,7 @@ exports.verifyEmailExist= (req, res, next)=>{
 }
 
 exports.hashPassword = (req, res, next) => {
-    console.log('Sign up');
+    console.log('Encrypt password and Sign up');
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
@@ -79,33 +79,53 @@ exports.hashPassword = (req, res, next) => {
 exports.verifyLogin = (req, res, next)=>{
     //for login
     const email = req.body.email;
-    connection.query(
-        'SELECT * FROM users WHERE email = ?',
-        [email],
-        (error, results) => {
-            if (results.length > 0) {
-            // Define the plain constant
-            const plain = req.body.password;
-            
-            // Define the hash constant
-            const hash = results[0].password;
-            
-            // Add a compare method to compare the passwords
-            bcrypt.compare(plain, hash, (error, isEqual)=>{
-                if (isEqual){
-                req.session.userId = results[0].id;
-                req.session.username = results[0].username;
-                next();
-                }else{
-                res.redirect('/login')
+    const password = req.body.password;
+    const errors =[]
+    if(email === ''){
+        errors.push('Username is Empty');
+    }
+    if(password===''){
+        errors.push('Password is empty');
+    }
+    
+
+    //print out error warning
+    if(errors.length>0){
+        errors.forEach(error =>{
+            console.log(error);
+        })
+        res.render('login.ejs', {errors: errors})
+    }else{
+        connection.query(
+            'SELECT * FROM users WHERE email = ?',
+            [email],
+            (error, results) => {
+                if (results.length > 0) {
+                // Define the plain constant
+                const plain = req.body.password;
+                
+                // Define the hash constant
+                const hash = results[0].password;
+                
+                // Add a compare method to compare the passwords
+                bcrypt.compare(plain, hash, (error, isEqual)=>{
+                    if (isEqual){
+                    req.session.userId = results[0].id;
+                    req.session.username = results[0].username;
+                    next();
+                    }else{
+                        errors.push("incorrect password");
+                        res.render('login.ejs', {errors: errors})
+                    }
+                });
+                } else {
+                    errors.push("Incorrect email/user not found")
+                    res.render('login.ejs', {errors: errors});
                 }
-            });
-            } else {
-                const errorMessages =["User does not exist"];
-                res.render('login.ejs', {errorMessages: errorMessages});
             }
-        }
-    );
+        );
+    
+    }
 }
 
 

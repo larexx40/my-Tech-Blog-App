@@ -123,7 +123,7 @@ app.post('/signup',
 );
 
 app.get('/login', (req, res) => {
-  res.render('login.ejs');
+  res.render('login.ejs', {errors: []});
 });
 
 app.post('/login', auth.verifyLogin, (req, res) => {
