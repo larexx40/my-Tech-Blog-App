@@ -54,7 +54,7 @@ exports.verifyEmailExist= (req, res, next)=>{
 
 
 
-exports.hashPassword = (req, res, next) => {
+exports.hashPasswordAndSave = (req, res, next) => {
     console.log('Encrypt password and Sign up');
     const username = req.body.username;
     const email = req.body.email;

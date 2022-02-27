@@ -58,24 +58,10 @@ app.get('/signup', (req, res) => {
   res.render('signup.ejs', { errors: [] });
 });
 
-app.post('/signup', auth.verifyInput, auth.verifyEmailExist,
-  (req, res) => {
-    //hash pasword and save
-    console.log('Sign up');
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
-    bcrypt.hash(password, 10, (error, hash) => {
-      connection.query(
-        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-        [username, email, hash],
-        (error, results) => {
-          req.session.userId = results.insertId;
-          req.session.username = username;
-          res.redirect('/list');
-        }
-      );
-    });
+app.post('/signup', auth.verifyInput, 
+  auth.verifyEmailExist, auth.hashPasswordAndSave,
+  (req,res, next)=>{
+
   }
 );
 
