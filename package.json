@@ -4,14 +4,16 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon -r './.module' ./app.js"
+    "start": "node app.js"
   },
   "author": "Progate",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
-    "mysql": "^2.16.0"
+    "express-session": "^1.17.2",
+    "mysql": "^2.18.1"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"
